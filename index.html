@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Love You Project ❤️</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:radial-gradient(circle at center,#0a0a0a 0%,#000 70%);overflow:hidden;font-family:Arial,Helvetica,sans-serif;height:100vh;width:100vw;color:white}
+        canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+        #heartCanvas{z-index:2}
+        .container{position:relative;z-index:5;width:100%;height:100vh}
+        .screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;transition:all .8s}
+        .hidden{opacity:0;pointer-events:none;transform:scale(1.05)}
+        .title{font-size:3.2rem;text-shadow:0 0 10px #9864b1,0 0 20px #9864b1,0 0 40px #9864b1;margin-bottom:15px}
+        .subtitle{color:#bbb;font-size:1.2rem;margin-bottom:40px}
+        .btn{margin:10px;padding:16px 38px;font-size:1.1rem;font-weight:bold;color:white;background:linear-gradient(135deg,#9864b1,#9864b1);border:none;border-radius:50px;cursor:pointer;box-shadow:0 0 10px #9864b1,0 0 25px #9864b1;transition:.3s}
+        .btn:hover{transform:scale(1.08);box-shadow:0 0 20px #ff2d75,0 0 50px #ff2d75}
+        #loveText{font-size:2.8rem;text-shadow:0 0 10px #9864b1,0 0 20px #9864b1,0 0 40px #9864b1;transition:opacity .4s,transform .4s}
+        .finalMessage{font-size:1.8rem;width:90%;line-height:1.6;text-shadow:0 0 10px #9864b1,0 0 30px #9864b1}
+        #finalLoveMessage{position:absolute;bottom:12%;width:100%;font-size:2.6rem;opacity:0;text-shadow:0 0 10px #9864b1,0 0 30px #9864b1,0 0 60px #9864b1;transition:opacity 1.5s}
+        
+        .stories-header{width:90%;max-width:800px;margin-bottom:20px}
+        .search-input,.sort-select{width:100%;max-width:500px;padding:14px 18px;margin:8px 0;border:none;border-radius:50px;background:rgba(255,255,255,.1);color:white;font-size:1rem}
+        .stories-list{width:90%;max-width:800px;max-height:55vh;overflow-y:auto;padding:10px}
+        .story-card{background:rgba(255,255,255,.08);border-radius:16px;padding:18px;margin:12px 0;text-align:left;cursor:pointer;transition:.3s;position:relative}
+        .story-card:hover{background:rgba(152,100,177,.25);transform:translateY(-4px)}
+        .story-card h3{color:#ff2d75;margin-bottom:8px;font-size:1.3rem}
+        .story-card .date{color:#888;font-size:.95rem;margin-bottom:10px}
+        .story-card p{color:#ddd;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        .delete-btn{position:absolute;top:12px;right:12px;background:#ff2d75;color:white;border:none;padding:6px 12px;border-radius:50px;font-size:0.85rem;cursor:pointer}
+
+        .admin-input,textarea{width:90%;max-width:600px;padding:14px;margin:10px 0;border:none;border-radius:12px;background:rgba(255,255,255,.1);color:white;font-size:1rem}
+        textarea{resize:vertical;min-height:160px}
+        .article-content{width:90%;max-width:800px;padding:20px;text-align:left}
+        .article-content h1{font-size:2.4rem;margin-bottom:10px;text-shadow:0 0 20px #9864b1}
+        .article-date{color:#ff2d75;margin-bottom:25px}
+
+        #adminKey {position:fixed;top:15px;right:15px;font-size:26px;cursor:pointer;z-index:100;opacity:0.75;transition:all .3s;text-shadow:0 0 10px #9864b1}
+        #adminKey:hover {opacity:1;transform:scale(1.25)}
+
+        .skip-btn{position:absolute;bottom:30px;background:rgba(0,0,0,0.4);color:white;border:none;padding:10px 24px;border-radius:50px;font-size:1rem;cursor:pointer}
+        
+        @media (max-width: 768px) {
+            .title{font-size:2.3rem}
+            #loveText{font-size:2.1rem}
+            .finalMessage{font-size:1.4rem}
+            .btn{padding:14px 32px;font-size:1rem}
+            #finalLoveMessage{font-size:2.1rem}
+            #adminKey{font-size:24px;top:12px;right:12px}
+            
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9EMLFT9KCG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9EMLFT9KCG');
+</script>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <div id="adminKey">🔑</div>
+
+    <div class="container">
+        <div id="introScreen" class="screen">
+            <h1 class="title">❤️ A Small Surprise ❤️</h1>
+            <p class="subtitle">Choose what you want to see</p>
+            <button id="startBtn" class="btn">🌍 Ljubim te</button>
+            <button id="heartBtn" class="btn">💖 Forever</button>
+            <button id="storiesBtn" class="btn stories-btn">📖 Light reading</button>
+        </div>
+
+        <div id="languageScreen" class="screen hidden">
+            <div id="loveText">I love you</div>
+            <button id="skipLangBtn" class="skip-btn">Skip</button>
+        </div>
+
+        <div id="finalScreen" class="screen hidden">
+            <h2 class="finalMessage">No matter the language,<br>it always means the same thing ❤️</h2>
+            <button id="backToChoicesBtn" class="btn">Back to Choices</button>
+        </div>
+
+        <div id="heartScreen" class="screen hidden">
+            <canvas id="heartCanvas"></canvas>
+            <div id="finalLoveMessage">❤️ I Love You ❤️</div>
+            <button id="skipHeartBtn" class="skip-btn">Skip Animation</button>
+        </div>
+
+        <div id="storiesScreen" class="screen hidden">
+            <div class="stories-header">
+                <h2 class="title">Light reading</h2>
+                <input type="text" id="searchInput" placeholder="Search stories..." class="search-input">
+                <select id="sortSelect" class="sort-select">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+            <div id="storiesList" class="stories-list"></div>
+            <button id="backToHomeFromStories" class="btn">← Back</button>
+        </div>
+
+        <div id="adminLoginScreen" class="screen hidden">
+            <h2 class="title">Admin Login</h2>
+            <input type="password" id="adminPassword" placeholder="Enter admin password" class="admin-input">
+            <button id="loginBtn" class="btn">Login</button>
+            <button id="cancelLoginBtn" class="btn">Cancel</button>
+        </div>
+
+        <div id="adminPanel" class="screen hidden">
+            <h2 class="title">Admin Panel</h2>
+            <input type="text" id="entryTitle" placeholder="Title" class="admin-input">
+            <input type="date" id="entryDate" class="admin-input">
+            <textarea id="entryContent" placeholder="Write your message here..." rows="8"></textarea>
+            <button id="saveEntryBtn" class="btn">Save New Memory</button>
+
+            <hr style="width:80%;margin:25px 0;background:rgba(255,255,255,0.2);border:none;height:1px">
+
+            <h3 style="margin:15px 0">Existing Stories</h3>
+            <div id="adminStoriesList" class="admin-list"></div>
+
+            <button id="cancelAdminBtn" class="btn">Back to Home</button>
+        </div>
+
+        <div id="articleScreen" class="screen hidden">
+            <div class="article-content">
+                <button id="backToStoriesBtn" class="btn">← Back to Stories</button>
+                <h1 id="articleTitle"></h1>
+                <p id="articleDate" class="article-date"></p>
+                <div id="articleBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://jdlyhfqridlctyglujsc.supabase.co/rest/v1/"; // paste your Project URL here
+        const SUPABASE_ANON_KEY = "sb_publishable_HRro_tzaeAnNUKT5mtJYyg_u1gUGPAm"; // paste your anon public key here
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const ADMIN_PASSWORD = "ljubimsaro"; // CHANGE THIS
+
+        let particles = [], heartPoints = [], heartStarted = false, langInterval = null;
+        const canvas = document.getElementById("particleCanvas");
+        const ctx = canvas.getContext("2d");
+        const hcanvas = document.getElementById("heartCanvas");
+        const hctx = hcanvas.getContext("2d");
+
+        function resize() { canvas.width = hcanvas.width = window.innerWidth; canvas.height = hcanvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener("resize", resize);
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 220; i++) {
+                particles.push({x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4});
+            }
+        }
+        initParticles();
+
+        function animateBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                ctx.fillStyle = "#9864b1"; ctx.shadowBlur = 15; ctx.shadowColor = "#9864b1"; ctx.fill();
+            });
+            requestAnimationFrame(animateBackground);
+        }
+        animateBackground();
+
+        function prepareHeart() {
+            heartPoints = [];
+            const scale = 18;
+            for (let i = 0; i < particles.length; i++) {
+                let t = (Math.PI * 2) * (i / particles.length) - Math.PI / 2;
+                let x = 16 * Math.pow(Math.sin(t), 3);
+                let y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                heartPoints.push({x: canvas.width/2 + x*scale, y: canvas.height/2 + y*scale});
+            }
+        }
+
+        function animateHeart() {
+            hctx.clearRect(0, 0, hcanvas.width, hcanvas.height);
+            const progress = Math.min(1, (Date.now() - heartStartTime) / 8000); // slow build like original
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                let target = heartPoints[i];
+                if (target) {
+                    let activation = i / particles.length;
+                    if (progress > activation) {
+                        p.x += (target.x - p.x) * 0.05;
+                        p.y += (target.y - p.y) * 0.05;
+                    }
+                }
+                hctx.beginPath(); hctx.arc(p.x, p.y, 2.4, 0, Math.PI*2);
+                hctx.fillStyle = "#9864b1"; hctx.shadowBlur = 25; hctx.shadowColor = "#9864b1"; hctx.fill();
+            }
+            if (progress < 1) requestAnimationFrame(animateHeart);
+        }
+
+        let heartStartTime = 0;
+
+        function startHeartAnimation() {
+            if (heartStarted) return;
+            heartStarted = true;
+            heartStartTime = Date.now();
+            prepareHeart();
+            animateHeart();
+            setTimeout(() => {
+                document.getElementById("finalLoveMessage").style.opacity = 1;
+            }, 6500);
+        }
+
+        function hideAll() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            if (langInterval) clearInterval(langInterval);
+        }
+
+        document.getElementById("adminKey").addEventListener("click", () => {
+            hideAll();
+            document.getElementById("adminLoginScreen").classList.remove("hidden");
+        });
+
+        document.getElementById("startBtn").addEventListener("click", () => {
+            hideAll();
+            document.getElementById("languageScreen").classList.remove("hidden");
+            let i = 0;
+            const langs = ["I love you","Te amo","Je t'aime","Ich liebe dich","Ti amo","Eu te amo","Ik hou van jou","Jag älskar dig","Jeg elsker dig","Minä rakastan sinua","Kocham cię","Miluji tě","Szeretlek","Te iubesc","Volim te","Σ' αγαπώ","Seni seviyorum","أنا أحبك","אני אוהב אותך","دوستت دارم","我爱你","사랑해","愛してる"];
+            langInterval = setInterval(() => {
+                const txt = document.getElementById("loveText");
+                txt.style.opacity = 0;
+                setTimeout(() => { txt.textContent = langs[i]; txt.style.opacity = 1; }, 200);
+                i++;
+                if (i >= langs.length) {
+                    clearInterval(langInterval);
+                    setTimeout(() => { hideAll(); document.getElementById("finalScreen").classList.remove("hidden"); }, 800);
+                }
+            }, 700);
+        });
+
+        document.getElementById("skipLangBtn").addEventListener("click", () => {
+            hideAll();
+            document.getElementById("finalScreen").classList.remove("hidden");
+        });
+
+        document.getElementById("backToChoicesBtn").addEventListener("click", () => {
+            hideAll();
+            document.getElementById("introScreen").classList.remove("hidden");
+        });
+
+        document.getElementById("heartBtn").addEventListener("click", () => {
+            hideAll();
+            document.getElementById("heartScreen").classList.remove("hidden");
+            startHeartAnimation();
+        });
+
+        document.getElementById("skipHeartBtn").addEventListener("click", () => {
+            particles.forEach((p, i) => {
+                const target = heartPoints[i];
+                if (target) {
+                    p.x = target.x;
+                    p.y = target.y;
+                }
+            });
+            document.getElementById("finalLoveMessage").style.opacity = 1;
+        });
+
+        document.getElementById("storiesBtn").addEventListener("click", showStories);
+
+        // Admin & Stories code
+        document.getElementById("loginBtn").addEventListener("click", () => {
+            if (document.getElementById("adminPassword").value === ADMIN_PASSWORD) {
+                hideAll();
+                document.getElementById("adminPanel").classList.remove("hidden");
+                document.getElementById("adminPassword").value = "";
+                loadAdminStories();
+            } else alert("Wrong password!");
+        });
+
+        document.getElementById("cancelLoginBtn").addEventListener("click", () => { hideAll(); document.getElementById("introScreen").classList.remove("hidden"); });
+        document.getElementById("cancelAdminBtn").addEventListener("click", () => { hideAll(); document.getElementById("introScreen").classList.remove("hidden"); });
+
+        document.getElementById("saveEntryBtn").addEventListener("click", async () => {
+        const title = document.getElementById("entryTitle").value.trim();
+        const date = document.getElementById("entryDate").value;
+        const content = document.getElementById("entryContent").value.trim();
+        if (!title || !date || !content) return alert("Please fill all fields");
+        const { error } = await sb.from("entries").insert([{ title, entry_date: date, content }]);
+        if (error) { alert("Error saving: " + error.message); return; }
+        alert("Memory saved ❤️");
+        document.getElementById("entryTitle").value = "";
+        document.getElementById("entryDate").value = "";
+        document.getElementById("entryContent").value = "";
+        loadAdminStories();
+    });
+
+        async function getEntries() {
+        const { data, error } = await sb.from("entries").select("*");
+        if (error) { console.error(error); return []; }
+        return data.map(e => ({ id: e.id, title: e.title, date: e.entry_date, content: e.content }));
+    }
+
+        async function loadAdminStories() {
+            const container = document.getElementById("adminStoriesList");
+            container.innerHTML = "";
+            let entries = await getEntries();
+            if (entries.length === 0) {
+                container.innerHTML = `<p style="color:#888;padding:20px">No stories yet.</p>`;
+                return;
+            }
+            entries.forEach((entry, index) => {
+                const card = document.createElement("div");
+                card.className = "story-card";
+                card.style.cursor = "default";
+                card.innerHTML = `<h3>${entry.title}</h3><div class="date">${entry.date}</div><p>${entry.content.substring(0,130)}...</p><button class="delete-btn">🗑 Delete</button>`;
+                card.querySelector(".delete-btn").addEventListener("click", async (e) => {
+                e.stopImmediatePropagation();
+                if (confirm(`Delete "${entry.title}"?`)) {
+                    const { error } = await sb.from("entries").delete().eq("id", entry.id);
+                    if (error) { alert("Error deleting: " + error.message); return; }
+                    loadAdminStories();
+                }
+            });
+                container.appendChild(card);
+            });
+        }
+
+        async function showStories() {
+            hideAll();
+            document.getElementById("storiesScreen").classList.remove("hidden");
+            const list = document.getElementById("storiesList");
+            list.innerHTML = "";
+            let entries = await getEntries();
+            if (entries.length === 0) {
+                list.innerHTML = `<p style="color:#888;padding:30px">No stories yet...</p>`;
+                return;
+            }
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            entries = entries.filter(e => e.title.toLowerCase().includes(searchTerm) || e.content.toLowerCase().includes(searchTerm));
+            const sortMode = document.getElementById("sortSelect").value;
+            entries.sort((a,b) => sortMode === "newest" ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date));
+            entries.forEach(entry => {
+                const card = document.createElement("div");
+                card.className = "story-card";
+                card.innerHTML = `<h3>${entry.title}</h3><div class="date">${entry.date}</div><p>${entry.content.substring(0,150)}...</p>`;
+                card.onclick = () => openArticle(entry);
+                list.appendChild(card);
+            });
+        }
+
+        function openArticle(entry) {
+            hideAll();
+            document.getElementById("articleScreen").classList.remove("hidden");
+            document.getElementById("articleTitle").textContent = entry.title;
+            document.getElementById("articleDate").textContent = entry.date;
+            document.getElementById("articleBody").innerHTML = entry.content.replace(/\n/g, '<br><br>');
+        }
+
+        document.getElementById("backToHomeFromStories").addEventListener("click", () => { hideAll(); document.getElementById("introScreen").classList.remove("hidden"); });
+        document.getElementById("backToStoriesBtn").addEventListener("click", showStories);
+        document.getElementById("searchInput").addEventListener("input", showStories);
+        document.getElementById("sortSelect").addEventListener("change", showStories);
+
+        hideAll();
+        document.getElementById("introScreen").classList.remove("hidden");
+    </script>
+</body>
+</html>
